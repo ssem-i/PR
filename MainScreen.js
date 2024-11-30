@@ -32,26 +32,26 @@ function MainScreen() {
     },
   });
 // 캘린더 화면에서 split
-    const panResponderCalendar = PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-            onPanResponderMove: (e, gestureState) => {
-              if (gestureState.dy < 0) translateY.setValue(gestureState.dy); // 위로 드래그
-            },
-            onPanResponderRelease: (e, gestureState) => {
-              if (gestureState.dy < -150) {
-                setViewState('split'); // 충분히 위로 드래그하면 split 화면으로 전환
-                Animated.spring(translateY, {
-                toValue: 0, useNativeDriver: true,
+  const panResponderCalendar = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderMove: (e, gestureState) => {
+      if (gestureState.dy < 0) translateY.setValue(gestureState.dy); // 위로 드래그
+    },
+    onPanResponderRelease: (e, gestureState) => {
+    if (gestureState.dy < -150) {
+      setViewState('split'); // 충분히 위로 드래그하면 split 화면으로 전환
+      Animated.spring(translateY, {
+      toValue: 0, useNativeDriver: true,
                // duration: 300,
                 //        easing: Easing.out(Easing.ease),
                 //friction: 7,
                 //tension: 40,
-                }).start();
-              } else {
-                Animated.spring(translateY, { toValue: 0, useNativeDriver: true, }).start(); // 드래그 짧으면 원래 위치로 복귀
-              }
-            },
-    });
+      }).start();
+    } else {
+      Animated.spring(translateY, { toValue: 0, useNativeDriver: true, }).start(); // 드래그 짧으면 원래 위치로 복귀
+      }
+    },
+  });
 // 리스트 전체화면에서 split
     const panResponderList = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -60,7 +60,7 @@ function MainScreen() {
       },
       onPanResponderRelease: (e, gestureState) => {
         if (gestureState.dy > 150) {
-          setViewState('split'); // 충분히 아래로 드래그하면 split 화면으로 전환
+          setViewState('split'); // 아래로 드래그
           Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
         } else {
           Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start(); // 드래그 짧으면 원래 위치로 복귀
@@ -70,20 +70,15 @@ function MainScreen() {
   const panResponderBottom = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderMove: (e, gestureState) => {
-      // 위로 드래그(g.dy < 0) → IEList를 표시
+      // 위로 드래그
       //if (gestureState.dy < 0) translateY.setValue(gestureState.dy);
-
       translateY.setValue(Math.max(gestureState.dy, -SCREEN_HEIGHT / 2));
-
     },
     onPanResponderRelease: (e, gestureState) => {
       if (gestureState.dy < -150) {
-        setViewState('ielist'); // 위로 드래그 IEList 전체화면
-
+        setViewState('ielist'); // 위로 드래그
         Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
       } else {
-        //Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
-
         Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
       }
     },
@@ -107,12 +102,10 @@ function MainScreen() {
     switch (viewState) {
       case 'calendar':
         return (
-          <Animated.View
-                    style={{ flex: 1,
-                      }}
-                    {...panResponderCalendar.panHandlers}>
-                    <CalendarView />
-                  </Animated.View>
+          <Animated.View style={{ flex: 1, }}
+            {...panResponderCalendar.panHandlers}>
+              <CalendarView />
+          </Animated.View>
         );
       case 'ielist':
         return (
@@ -121,19 +114,16 @@ function MainScreen() {
           //  {...panResponderList.panHandlers}
           //  >
           <View style={{ flex: 1 }} {...panResponderList.panHandlers}>
-
             <View style={{alignItems: 'center'}}>
             <Text style={ {color:'black', padding : 20}} >△</Text>
             </View>
             <IEList />
-
           </View>
           //</Animated.View>
         );
-      default: // 'split' 상태
+      default: // split
         return (
           <View style={styles.splitScreenContainer}>
-
             <Animated.View
               style={[styles.topHalf, { transform: [{ translateY }] }
               ]}
@@ -142,16 +132,12 @@ function MainScreen() {
               <WeekCalendar />
             </Animated.View>
 
-
             <Animated.View
               style={[styles.bottomHalf, { transform: [{ translateY }] }]}
               {...panResponderBottom.panHandlers}
             >
-
               <IEList />
-               </Animated.View>
-
-
+            </Animated.View>
           </View>
         );
     }

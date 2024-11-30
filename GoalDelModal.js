@@ -9,18 +9,16 @@ export default function GaolDelModal({ visible, onClose, onConfirmDel }) {
         <View style={styles.modalContent}>
 
           <Text style={styles.text}>목표를 삭제하시겠습니까?</Text>
-
           <View style={styles.viewButton}>
             <TouchableOpacity style={styles.btn}
             onPress={onConfirmDel}
             >
-            <Text style={styles.text}>예</Text>
+              <Text style={styles.text}>예</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.btn} onPress={onClose}>
             <Text style={styles.text}>아니오</Text>
             </TouchableOpacity>
-
           </View>
         </View>
       </View>
@@ -44,7 +42,6 @@ const styles = StyleSheet.create({
       borderRadius: 10,
     },
   view: {
-
     width: 300,
     backgroundColor: 'white',
     borderRadius: 10,
@@ -80,15 +77,13 @@ const styles = StyleSheet.create({
   viewButton: {
     padding: 10,
       margin: 30,
-      //borderWidth: 1,
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginHorizontal: 11,  // 버튼 간의 간격
+      marginHorizontal: 11,  // 버튼 간격
     },
   container: {
     alignItems: 'center',
     marginTop: 30,
     flexDirection: 'row',
-
   },
 });

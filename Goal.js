@@ -1,10 +1,11 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import {View, Text, TouchableOpacity, TextInput, Modal, Button, StyleSheet, FlatList } from 'react-native';
 import GoalAddModal from './GoalAddModal.js';
 import GoalDelModal from './GoalDelModal.js';
 import BudgetBar from './BudgetBar.js';
 import BudgetModal from './BudgetModal.js';
 import * as Progress from 'react-native-progress';
+
 const PlustButton = ({ onAddPress }) => {
   return(
     <TouchableOpacity
@@ -46,7 +47,7 @@ function GoalItem({ index, goal, dayLeft, insufAmount, onDelPress }) {
          </View>
      );
 }
-function GoalList() {
+function GoalView() {
   const [goalModalVisible, setGoalModalVisible] = useState(false); // 상태 관리
   const [delModalVisible, setDelModalVisible] = useState(false);
   const [selectedGoalIndex, setSelectedGoalIndex] = useState(null); // 선택된 목표 인덱스
@@ -132,10 +133,10 @@ function BudgetView() {
       </View>
         <BudgetBar/>
         {budgetModalVisible && (
-                <BudgetModal
-                  visible={budgetModalVisible}
-                  onClose={() => setbudgetModalVisible(false)}
-                />
+          <BudgetModal
+          visible={budgetModalVisible}
+          onClose={() => setbudgetModalVisible(false)}
+        />
         )}
     </View>
   );
@@ -143,10 +144,8 @@ function BudgetView() {
 export default function Goal() {
   return (
     <View style={styles.container}>
-      <View style={styles.goalListView}>
-      <GoalList/>
+      <GoalView/>
       <BudgetView/>
-      </View>
     </View>
   );
 }
@@ -174,9 +173,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     flex:1,
   },
-  goalListView: {
-    flex: 1,
-  },
   headerContainer: {
     margin: 10,
     flexDirection: 'row',
@@ -200,7 +196,7 @@ const styles = StyleSheet.create({
   budgetText: {
     margin:10,
     color: 'black',
-        fontSize: 14,
+    fontSize: 14,
   },
   plustBtn: {
     marginHorizontal: 10,

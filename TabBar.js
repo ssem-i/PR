@@ -1,24 +1,17 @@
 import React, { useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-//import { format, startOfWeek, addDays } from "date-fns";
 import { Calendar } from "react-native-calendars";
-//import RecordAddModal from './RecordAddModal';
 import CalendarView from './CalendarView';
 import Goal from './Goal';
 import IEList from './IEList';
 import MainScreen from './MainScreen';
-
 
 export default function TabBar() {
   const [selectedTab, setSelectedTab] = useState('Calendar');
   const renderScreen = () => {
     switch (selectedTab) {
       case 'Calendar':
-        return (
-        //<View>
-        <MainScreen />
-        //</View>
-        );
+        return ( <MainScreen /> );
       case 'Goal':
         return (
         <View style={{ flex: 1 }}>
@@ -26,17 +19,15 @@ export default function TabBar() {
         </View>
         );
         case 'Statistics':
-              return (
-                <View>
-                  <Text>Statistics Content</Text>
-                </View>
-              );
+          return (
+            <View>
+              <Text>Statistics Content</Text>
+            </View>
+          );
       default:
         return null;
      }
   };
-
-
   const handleTabCal = () => {
         console.log('tab calendar');
         setSelectedTab('Calendar');
@@ -45,7 +36,6 @@ export default function TabBar() {
           console.log('tab goal');
           setSelectedTab('Goal');
   };
-
   return (
     <View style={styles.container}>
       <View style={styles.content}>{renderScreen()}</View>
@@ -58,10 +48,7 @@ export default function TabBar() {
         <Text style={styles.tabText}>Calendar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.tabButton}
-          //onPress={}
-        >
+        <TouchableOpacity style={styles.tabButton} >
         <Text style={styles.tabText}>statistics</Text>
         </TouchableOpacity>
 
@@ -84,10 +71,7 @@ const styles = StyleSheet.create({
       //top: 0,
     },
     content: {
-     //backgroundColor: 'yellow',
      flex: 1,
-     // paddingBottom: 60,
-      //marginBottom: 100,
      // top: 0,
       //justifyContent: 'flex-start',
       //alignItems: 'center', 여백 문제
@@ -98,8 +82,6 @@ const styles = StyleSheet.create({
       //left: 0,
       //right: 0,
       flexDirection: 'row',
-      //justifyContent: 'flex-end',
-      //alignItems: 'end',
       height: 60,
       backgroundColor: '#f4eeff',
       borderTopWidth: 1,

@@ -1,7 +1,6 @@
 import React, {useContext, useState} from 'react';
 import {View, Text, TouchableOpacity, TextInput, Modal, Button, StyleSheet, FlatList } from 'react-native';
 
-
 export default function IEList() {
 
   const records = [

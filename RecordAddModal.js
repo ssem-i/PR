@@ -1,4 +1,4 @@
-// ModalComponent.js
+
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
@@ -13,14 +13,12 @@ const ModalComponent = ({ visible, onClose, onAddRecord }) => {
   const [selectedIE, setSelectedIE] = useState(null);
   const [ date, setDate]=useState(new Date());
   const handleAddRecord = () => {
-
     if (income || expense) {
       onAddRecord(income, expense, memo, category);
       setIncome('');
       setExpense('');
       onClose();
     } else {
-
     }
   };
    const handleIncomePress = () => {
@@ -33,14 +31,12 @@ const ModalComponent = ({ visible, onClose, onAddRecord }) => {
      setSelectedIE('expense');
    };
 
-
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.Text2}>날짜</Text>
           <View style={styles.dateContainer}>
-
               <DatePicker
                 date={date}
                 onDateChange={setDate}
@@ -50,8 +46,6 @@ const ModalComponent = ({ visible, onClose, onAddRecord }) => {
                 style={{ transform: [{ scale: 0.9 }], width: 151} }
                 />
           </View>
-
-
           <Text style={styles.Text}>수입 또는 지출 선택</Text>
           <View style={styles.IEbuttonContainer}>
           <TouchableOpacity style={[styles.IEbutton, selectedIE==='income' && styles.selectedIE
@@ -60,7 +54,6 @@ const ModalComponent = ({ visible, onClose, onAddRecord }) => {
           >
             <Text style={styles.IEtext}>수입</Text>
           </TouchableOpacity>
-
 
           <TouchableOpacity style={[styles.IEbutton, selectedIE==='expense' && styles.selectedIE
           ]} onPress={handleExpensePress} >
@@ -116,13 +109,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-    color: '#000',
-  },
   Text: {
     color: '#000',
     marginTop: 30,
@@ -145,7 +131,6 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   viewButton: {
-    margintop: 30,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -185,21 +170,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 5,
     backgroundColor: '#E6E6FA',
-
   },
   selectedIE: {
       backgroundColor: 'grey',
   },
-
   dateContainer: {
-     //backgroundColor:'red',
-      //paddingHorizontal: 50,
       alignItems: 'center',
-
-      //flexDirection: 'row',
-      //justifyContent: 'space-between',
-      //marginHorizontal: 30,
-
     },
 });
 

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet,TouchableOpacity } from 'react-native';
 import { format, startOfWeek, addDays } from 'date-fns';
 import AddBtn from './AddBtn';
 import RecordAddModal from './RecordAddModal';
+
 function WeekCalendar() {
   const records = [
     { id: 1, date: '2024-11-24', category: '급여', content: 'Test Salary', amount: 20000, type: 'income' },
@@ -70,7 +71,6 @@ function WeekCalendar() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
 
   container: {
