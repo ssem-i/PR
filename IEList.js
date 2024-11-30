@@ -104,8 +104,10 @@ const styles = StyleSheet.create({
       backgroundColor: 'white',
     },
     textTitle: {
-      fontSize: 14,
+      fontSize: 16,
       color: 'black',
+      fontWeight: 'bold',
+      paddingBottom: 10,
     },
     text: {
       color: 'black',

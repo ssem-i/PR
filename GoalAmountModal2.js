@@ -20,7 +20,7 @@ export default function GaolAmountModal2({ visible, onClose }) {
             <TouchableOpacity style={styles.btn} onPress={onClose}>
             <Text style={styles.text}>취소</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.btn}>
+            <TouchableOpacity style={styles.btn} >
             <Text style={styles.text}>적용</Text>
             </TouchableOpacity>
           </View>

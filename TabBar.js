@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
       //justifyContent: 'flex-end',
       //alignItems: 'end',
       height: 60,
-      backgroundColor: '#e0e0e0',
+      backgroundColor: '#f4eeff',
       borderTopWidth: 1,
       borderTopColor: '#e0e0e0',
     },

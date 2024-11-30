@@ -45,7 +45,6 @@ const DayBudgetBar = ({ budget, spent }) => {
 export default function BarView() {
     const monthlyData = { budget: 900000, spent: 300000 };
      const dayData = { budget: 500000, spent: 100000 };
-
   return(
     <View>
     <MonthlyBudgetBar

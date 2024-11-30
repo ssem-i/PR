@@ -4,6 +4,7 @@ import { format, startOfWeek, addDays } from 'date-fns';
 import { Calendar } from 'react-native-calendars';
 import RecordAddModal from './RecordAddModal';
 
+import AddBtn from './AddBtn';
 function CalendarView() {
 const records = [
     { id: 1, date: '2024-11-01', category: '급여', content: 'Test Salary', amount: 5000, type: 'income' },
@@ -97,23 +98,23 @@ const records = [
         //backgroundColor: 'red',
       }}
     />
-    <TouchableOpacity
-      style={styles.floatingButton}
-      onPress={() => setModalVisible(true)}>
-      <Text style={styles.floatingButtonText}>+</Text>
-    </TouchableOpacity>
+    <AddBtn addPress={() => setModalVisible(true)}/>
+
+    {modalVisible &&(
       <RecordAddModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         //onAddRecord={handleAddRecord}
       />
+    )}
+
   </View>
   );
 }
 
 const styles = StyleSheet.create({
   view:{
-    paddingTop: 40,
+    paddingTop: 30,
     flex: 1,
     //backgroundColor: 'red',
   },
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
    backgroundColor: '#eaeaea',
    borderRadius: 5,
    width: 50,
-   height: 100,
+   height: 90,
    },
     dayText: { fontSize: 16, color: '#000', marginTop:5, },
     expenseText: { fontSize: 12, color: '#01DFD7', marginTop: 4 },

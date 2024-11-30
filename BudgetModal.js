@@ -3,13 +3,17 @@ import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity } fr
 import { Picker } from '@react-native-picker/picker';
 
 
-export default function BudgetModal({ visible, onClose }) {
+export default function BudgetModal({ visible, onClose}) {
   const [monthlyBudget, setMonthlyBudget]=useState('');
-  const [dayBudget, setDayBudget]=useState('');
-  const handleApply = () => {
-      onApply(monthlyBudget, dayBudget); // 부모 컴포넌트에 데이터 전달
+  const [dailyBudget, setDailyBudget]=useState('');
+  const applyPress = () => {
+      //onApply(monthlyBudget, dailyBudget); // 부모 컴포넌트에 데이터 전달
+      const monthlyValue = parseFloat(monthlyBudget) || 0; // 문자열을 숫자로 변환
+      const dailyValue = parseFloat(dailyBudget) || 0;     // 변환 실패 시 0으로 설정
+      onApply(monthlyValue, dailyValue);
+
       setMonthlyBudget('');
-      setDayBudget('');
+      setDailyBudget('');
   };
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
@@ -26,7 +30,7 @@ export default function BudgetModal({ visible, onClose }) {
           <View style={styles.container}>
             <Text style={styles.containerText}>일별 예산</Text>
             <TextInput style={styles.input} placeholder="일별 예산(원)" placeholderTextColor="gray"
-            value={dayBudget} onChangeText={setDayBudget} keyboardType="numeric"
+            value={dailyBudget} onChangeText={setDailyBudget} keyboardType="numeric"
 
           />
           </View>
@@ -37,7 +41,7 @@ export default function BudgetModal({ visible, onClose }) {
             <Text style={styles.text}>취소</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.btn}
-              onPress={handleApply}
+             // onPress={applyPress}
             >
             <Text style={styles.text}>적용</Text>
             </TouchableOpacity>
