@@ -1,10 +1,11 @@
-import React, { useState} from 'react';
+import React, { useState } from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import { Calendar } from "react-native-calendars";
 import CalendarView from './CalendarView';
 import Goal from './Goal';
 import IEList from './IEList';
 import MainScreen from './MainScreen';
+import Stat from './StatScreen';
 
 export default function TabBar() {
   const [selectedTab, setSelectedTab] = useState('Calendar');
@@ -20,9 +21,9 @@ export default function TabBar() {
         );
         case 'Statistics':
           return (
-            <View>
-              <Text>Statistics Content</Text>
-            </View>
+          <View style={{ flex: 1 }}>
+          <Stat/>
+          </View>
           );
       default:
         return null;
@@ -36,6 +37,10 @@ export default function TabBar() {
           console.log('tab goal');
           setSelectedTab('Goal');
   };
+  const handleTabStat= () => {
+          console.log('tab statistics');
+          setSelectedTab('Statistics');
+  };
   return (
     <View style={styles.container}>
       <View style={styles.content}>{renderScreen()}</View>
@@ -48,7 +53,9 @@ export default function TabBar() {
         <Text style={styles.tabText}>Calendar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.tabButton} >
+        <TouchableOpacity 
+          style={styles.tabButton}
+          onPress={handleTabStat} >
         <Text style={styles.tabText}>statistics</Text>
         </TouchableOpacity>
 

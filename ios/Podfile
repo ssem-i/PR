@@ -19,6 +19,8 @@ target 'project_rec' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
+  pod 'RNSVG', :path => '../node_modules/react-native-svg'
+
   target 'project_recTests' do
     inherit! :complete
     # Pods for testing
