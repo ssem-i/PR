@@ -1,69 +1,111 @@
-import React, { useState } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
-import DatePickerModal from './DatePickerModal';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from './firebase'; 
+import { getAuth } from 'firebase/auth'; 
+import DatePickerModal from './DatePickerModal'; 
 
-const PieChartComponent = ({ selectedYear = 2024, selectedMonth = 12 }) => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
+const PieChartComponent = () => {
+  const [isModalVisible, setIsModalVisible] = useState(false); // 모달 표시 여부
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); // 선택된 연도
+  const [selectedHalf, setSelectedHalf] = useState('상반기'); // 선택된 상하반기 
+  const [categoriesData, setCategoriesData] = useState({}); // 카테고리별 지출 데이터
+  const [pieData, setPieData] = useState([]); // 파이 차트 데이터
 
-  const generateData = (month) => {
-    const categories = {
-      식비: Math.floor(Math.random() * 50000),
-      교통비: Math.floor(Math.random() * 50000),
-      쇼핑: Math.floor(Math.random() * 50000),
-      기타: Math.floor(Math.random() * 50000),
-      주거비: Math.floor(Math.random() * 50000),
-      교육비: Math.floor(Math.random() * 50000),
-      건강관리: Math.floor(Math.random() * 50000),
-      문화생활: Math.floor(Math.random() * 50000),
-      보험료: Math.floor(Math.random() * 50000),
-      경조사비: Math.floor(Math.random() * 50000),
-    };
-    return {
-      month,
-      categories,
-    };
-  };
-
-  const data = generateData(selectedMonth);
-
-  const totalExpenses = Object.values(data.categories).reduce((sum, expense) => sum + expense, 0);
   
-  const pieData = Object.keys(data.categories).map((category) => ({
-    name: category,
-    population: (data.categories[category] / totalExpenses) * 100,
-    color: category === '식비' ? '#fa9696' :
-           category === '교통비' ? '#ffd300' :
-           category === '쇼핑' ? '#88c8ff' :
-           category === '기타' ? '#7cd06a' :
-           category === '주거비' ? '#d287ff' :
-           category === '교육비' ? '#ff00ff' :
-           category === '건강관리' ? '#00ff00' :
-           category === '문화생활' ? '#00ffff' :
-           category === '보험료' ? '#ffff00' :
-           '#e4b7ff',
-    legendFontColor: '#7F7F7F',
-    legendFontSize: 15
-  }));
+  useEffect(() => {
+    fetchCategoryData();
+  }, [selectedYear, selectedHalf]);
 
-  const sortedCategories = Object.entries(data.categories)
-    .sort((a, b) => b[1] - a[1])
-    .map(([category, amount]) => ({ category, amount }));
+  //  카테고리별 지출 데이터를 가져오는 함수
+  const fetchCategoryData = async () => {
+    try {
+      const auth = getAuth();
+      const currentUser = auth.currentUser; 
+
+      if (!currentUser) {
+        console.error('사용자없음');
+        return;
+      }
+
+      const userEmail = currentUser.email; // 사용자 이메일
+      const months = selectedHalf === '상반기' ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12]; // 상반기 또는 하반기의 월 범위 설정
+
+      //  지출 데이터 가져오기 
+      const expensesQuery = query(
+        collection(db, userEmail, 'receipt', 'expenses'),
+        where('date', '>=', new Date(`${selectedYear}-01-01`)),
+        where('date', '<=', new Date(`${selectedYear}-12-31`))
+      );
+
+      const expenseSnapshot = await getDocs(expensesQuery);
+
+      const categories = expenseSnapshot.docs.reduce((acc, doc) => {
+        const { amount, category, date } = doc.data();
+        const month = new Date(date.toDate()).getMonth() + 1; // 데이터의 월 추출
+        if (months.includes(month)) {
+          acc[category] = (acc[category] || 0) + amount; // 카테고리별로 합산
+        }
+        return acc;
+      }, {});
+
+      setCategoriesData(categories); 
+
+      const totalExpenses = Object.values(categories).reduce((sum, expense) => sum + expense, 0); // 총 지출 계산
+
+   
+      const pieChartData = Object.keys(categories).map((category) => ({
+        name: category,
+        population: (categories[category] / totalExpenses) * 100, // 전체 대비 퍼센트 계산
+        color:
+          category === '음식'
+            ? '#fa9696'
+            : category === '교통'
+            ? '#ffd300'
+            : category === '쇼핑'
+            ? '#88c8ff'
+            : category === '기타'
+            ? '#7cd06a'
+            : category === '주거'
+            ? '#d287ff'
+            : category === '교육'
+            ? '#ff00ff'
+            : category === '경조사'
+            ? '#00ff00'
+            : category === '보험'
+            ? '#00ffff'
+            : category === '기타'
+            ? '#ffff00'
+            : '#e4b7ff', // 카테고리별 색상 지정
+        legendFontColor: '#7F7F7F',
+        legendFontSize: 15,
+      }));
+
+      setPieData(pieChartData); // 상태에 파이 차트 데이터 저장
+    } catch (error) {
+      console.error('오류:', error);
+    }
+  };
 
   const openModal = () => setIsModalVisible(true);
 
-  const applyPeriod = (year, month) => {
-    console.log(`Selected Year: ${year}, Selected Month: ${month}`);
+  // 모달에서 선택된 연도와 상하반기 적용
+  const applyPeriod = (year, half) => {
+    setSelectedYear(year);
+    setSelectedHalf(half);
     setIsModalVisible(false);
   };
-  
+
+  // 모달 닫기
   const closeModal = () => setIsModalVisible(false);
 
   return (
     <View style={styles.container}>
+      {/* 선택된 연도와 상하반기 표시 */}
       <View style={styles.header}>
         <Text style={styles.title}>
-          {selectedYear}년 {selectedMonth}월
+          {selectedYear}년 {selectedHalf}
         </Text>
         <TouchableOpacity style={styles.dateButton} onPress={openModal}>
           <Text style={styles.dateButtonText}>기간 설정</Text>
@@ -71,14 +113,15 @@ const PieChartComponent = ({ selectedYear = 2024, selectedMonth = 12 }) => {
         {isModalVisible && (
           <DatePickerModal
             selectedYear={selectedYear}
-            selectedMonth={selectedMonth}
+            selectedHalf={selectedHalf}
             applyPeriod={applyPeriod}
             closeModal={closeModal}
-            isPieChartModal={true} // PieChart일 경우 true 전달
+            isPieChartModal={true}
           />
         )}
       </View>
 
+      {/* 파이 차트 및 내역 영역 */}
       <View style={styles.chartWrapper}>
         <View style={styles.chartContainer}>
           <PieChart
@@ -91,14 +134,6 @@ const PieChartComponent = ({ selectedYear = 2024, selectedMonth = 12 }) => {
               backgroundGradientTo: '#ddd',
               color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`,
               labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              style: {
-                borderRadius: 16
-              },
-              propsForDots: {
-                r: '6',
-                strokeWidth: '2',
-                stroke: '#ffa726'
-              }
             }}
             accessor="population"
             backgroundColor="transparent"
@@ -111,20 +146,25 @@ const PieChartComponent = ({ selectedYear = 2024, selectedMonth = 12 }) => {
           {pieData.map((item, index) => (
             <View key={index} style={styles.legendItem}>
               <View style={[styles.legendColorBox, { backgroundColor: item.color }]} />
-              <Text style={styles.legendText}>{item.name} ({item.population.toFixed(2)}%)</Text>
+              <Text style={styles.legendText}>
+                {item.name} ({item.population.toFixed(2)}%)
+              </Text>
             </View>
           ))}
         </View>
       </View>
 
+      {/* 카테고리별 지출 목록 */}
       <View style={styles.expenseListWrapper}>
         <ScrollView style={styles.expenseList}>
-          {sortedCategories.map((item, index) => (
-            <View key={index} style={styles.expenseItem}>
-              <Text style={styles.expenseCategory}>{item.category}</Text>
-              <Text style={styles.expenseAmount}>{item.amount.toLocaleString()} 원</Text>
-            </View>
-          ))}
+          {Object.entries(categoriesData)
+            .sort((a, b) => b[1] - a[1]) // 지출 금액 기준 내림차순 정렬
+            .map(([category, amount], index) => (
+              <View key={index} style={styles.expenseItem}>
+                <Text style={styles.expenseCategory}>{category}</Text>
+                <Text style={styles.expenseAmount}>{amount.toLocaleString()} 원</Text>
+              </View>
+            ))}
         </ScrollView>
       </View>
     </View>
@@ -132,85 +172,22 @@ const PieChartComponent = ({ selectedYear = 2024, selectedMonth = 12 }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 20,
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 20,
-    color: '#000',
-    fontWeight: '600',
-  },
-  dateButton: {
-    backgroundColor: '#ddd',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    marginLeft: 10,
-    borderRadius: 25,
-  },
-  dateButtonText: {
-    color: '#000',
-    fontSize: 14,
-  },
-  chartWrapper: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  chartContainer: {
-    flex: 1,
-  },
-  legendContainer: {
-    flexDirection: 'column',
-    marginLeft: 0,
-    width: 150,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  legendColorBox: {
-    width: 15,
-    height: 15,
-    borderRadius: 50,
-    marginRight: 10,
-  },
-  legendText: {
-    fontSize: 13,
-    color: '#333',
-  },
-  expenseListWrapper: {
-    height: 260,
-  },
-  expenseList: {
-    width: '100%',
-    paddingHorizontal: 10,
-  },
-  expenseItem: {
-    backgroundColor: '#eee',
-    paddingHorizontal: 50,
-    paddingVertical: 18,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 10,
-  },
-  expenseCategory: {
-    fontSize: 16,
-    color: '#000',
-  },
-  expenseAmount: {
-    fontSize: 16,
-    color: '#000',
-    fontWeight: 'bold',
-  },
+  container: { backgroundColor: '#fff' },
+  header: { flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 20, paddingHorizontal: 20 },
+  title: { fontSize: 20, color: '#000', fontWeight: '600' },
+  dateButton: { backgroundColor: '#ddd', paddingVertical: 5, paddingHorizontal: 10, marginLeft: 10, borderRadius: 25 },
+  dateButtonText: { color: '#000', fontSize: 14 },
+  chartWrapper: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+  chartContainer: { flex: 1 },
+  legendContainer: { flexDirection: 'column', marginLeft: 0, width: 150 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  legendColorBox: { width: 15, height: 15, borderRadius: 50, marginRight: 10 },
+  legendText: { fontSize: 13, color: '#333' },
+  expenseListWrapper: { height: 260 },
+  expenseList: { width: '100%', paddingHorizontal: 10 },
+  expenseItem: { backgroundColor: '#eee', paddingHorizontal: 50, paddingVertical: 18, flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 10 },
+  expenseCategory: { fontSize: 16, color: '#000' },
+  expenseAmount: { fontSize: 16, color: '#000', fontWeight: 'bold' },
 });
 
 export default PieChartComponent;

@@ -1,78 +1,135 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet,TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { format, startOfWeek, addDays } from 'date-fns';
+import { db } from './firebase';
+import { getAuth } from 'firebase/auth';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import AddBtn from './AddBtn';
 import RecordAddModal from './RecordAddModal';
 
 function WeekCalendar() {
-  const records = [
-    { id: 1, date: '2024-11-24', category: '급여', content: 'Test Salary', amount: 20000, type: 'income' },
-    { id: 2, date: '2024-11-24', category: '식비', content: 'Test Grocery', amount: 10, type: 'income' },
-    { id: 3, date: '2024-11-25', category: '교통', content: 'Bus Ticket', amount: 20, type: 'income' },
-    { id: 4, date: '2024-11-27', category: '문화', content: 'Movie', amount: 10, type: 'expense' },
-    { id: 5, date: '2024-11-28', category: '기타', content: 'Test Bonus', amount: 20, type: 'income' },
-  ];
-
-  const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // 주 시작 날짜 (일요일 기준
-  const thisWeekDates = Array.from({ length: 7 }, (_, i) =>
-    format(addDays(weekStart, i), "yyyy-MM-dd")
-  );
   const [modalVisible, setModalVisible] = useState(false);
   const [dailySummary, setDailySummary] = useState({});
+  const [userEmail, setUserEmail] = useState(null);
+
+  const today = new Date();
+  const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // 주 시작 날짜 
+  const thisWeekDates = Array.from({ length: 7 }, (_, i) =>
+    format(addDays(weekStart, i), 'yyyy-MM-dd')
+  );
 
   const handleAddPress = () => {
-      setModalVisible(true);
+    setModalVisible(true);
   };
-  const handleCloseModal = () => {  // 모달 닫기
+  const handleCloseModal = () => {
     setModalVisible(false);
   };
 
-  useEffect(() => {  // 수입 지출 합
-    const summary = records.reduce((acc, curr) => {
-      const { date, amount, type } = curr;
-      if (!acc[date]) {
-        acc[date] = { income: 0, expense: 0 };
-      }
-      if (type === 'income') {
-        acc[date].income += amount;
-      } else if (type === 'expense') {
-        acc[date].expense += amount;
-      }
-      return acc;
-    }, {});
-    setDailySummary(summary);
+  // 사용자 이메일 가져오기
+  useEffect(() => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+
+    if (currentUser) {
+      setUserEmail(currentUser.email); 
+    } else {
+      console.error('로그인된 사용자가 없습니다.');
+    }
   }, []);
+
+  //  1주일 데이터 가져오기
+  useEffect(() => {
+    if (!userEmail) return;
+
+    const fetchWeeklyRecords = async () => {
+      try {
+        // 쿼리 설정
+        const startDate = new Date(thisWeekDates[0]); // 주 시작 날짜
+        const endDate = new Date(thisWeekDates[6]); // 주 마지막 날짜
+        endDate.setHours(23, 59, 59, 999); // 하루의 끝
+
+        const incomesQuery = query(
+          collection(db, userEmail, 'receipt', 'incomes'),
+          where('date', '>=', startDate),
+          where('date', '<=', endDate)
+        );
+        const expensesQuery = query(
+          collection(db, userEmail, 'receipt', 'expenses'),
+          where('date', '>=', startDate),
+          where('date', '<=', endDate)
+        );
+
+        // 데이터 가져오기
+        const incomesSnapshot = await getDocs(incomesQuery);
+        const expensesSnapshot = await getDocs(expensesQuery);
+
+        
+        const incomes = incomesSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          type: 'income',
+        }));
+
+        const expenses = expensesSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          type: 'expense',
+        }));
+
+        // 데이터 병합 및 요약 생성
+        const mergedRecords = [...incomes, ...expenses];
+
+        const summary = mergedRecords.reduce((acc, curr) => {
+          const formattedDate = format(new Date(curr.date.seconds * 1000), 'yyyy-MM-dd');
+          if (!acc[formattedDate]) {
+            acc[formattedDate] = { income: 0, expense: 0 };
+          }
+          if (curr.type === 'income') {
+            acc[formattedDate].income += curr.amount;
+          } else if (curr.type === 'expense') {
+            acc[formattedDate].expense += curr.amount;
+          }
+          return acc;
+        }, {});
+
+        setDailySummary(summary);
+      } catch (error) {
+        console.error('데이터를 가져오는 동안 오류 발생:', error);
+      }
+    };
+
+    fetchWeeklyRecords();
+  }, [userEmail]);
 
   return (
     <View style={styles.container}>
-      <View style={{alignItems: 'center'}}>
-                  <Text style={ {color:'black', padding : 20}} >△</Text>
-                  </View>
+      <View style={{ alignItems: 'center' }}>
+        <Text style={{ color: 'black', padding: 20 }}>△</Text>
+      </View>
       <Text style={styles.title}>이번주 캘린더</Text>
       <View style={styles.weekContainer}>
-        {thisWeekDates.map((date) => {
+        {thisWeekDates.map(date => {
           const income = dailySummary[date]?.income || 0;
           const expense = dailySummary[date]?.expense || 0;
 
           return (
             <View key={date} style={styles.dayContainer}>
               <Text style={styles.dateText}>{format(new Date(date), 'd')}</Text>
-              <Text style={styles.incomeText}>+ {income}</Text>
-              <Text style={styles.expenseText}>- {expense}</Text>
+              <Text style={styles.incomeText}>+ {income.toLocaleString()}</Text>
+              <Text style={styles.expenseText}>- {expense.toLocaleString()}</Text>
             </View>
           );
         })}
       </View>
-      <AddBtn addPress={handleAddPress}/>
-      {modalVisible && ( // 조건부 렌더링
+      <AddBtn addPress={handleAddPress} />
+      {modalVisible && (
         <RecordAddModal visible={modalVisible} onClose={handleCloseModal} />
       )}
     </View>
   );
 }
-const styles = StyleSheet.create({
 
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 20,
@@ -83,7 +140,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 10,
-    color:'black',
+    color: 'black',
   },
   weekContainer: {
     flexDirection: 'row',
@@ -109,12 +166,12 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   incomeText: {
-    fontSize: 13,
-    color: '#DF0174',
+    fontSize: 12,
+    color: 'green',
   },
   expenseText: {
-    fontSize: 13,
-    color: '#01DFD7',
+    fontSize: 12,
+    color: 'red',
   },
 });
 

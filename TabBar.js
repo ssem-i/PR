@@ -47,20 +47,20 @@ export default function TabBar() {
           style={styles.tabButton}
           onPress={handleTabCal}
         >
-        <Text style={styles.tabText}>Calendar</Text>
+        <Text style={styles.tabText}>캘린더</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
           style={styles.tabButton}
           onPress={handleTabStat} >
-        <Text style={styles.tabText}>statistics</Text>
+        <Text style={styles.tabText}>분석</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.tabButton}
           onPress={handleTabGoal}
         >
-        <Text style={styles.tabText}>Goal</Text>
+        <Text style={styles.tabText}>목표</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -70,21 +70,12 @@ export default function TabBar() {
 const styles = StyleSheet.create({
   container: {
       flex: 1,
-      //flexDirection: 'column',
       backgroundColor: 'white',
-      //top: 0,
     },
     content: {
      flex: 1,
-     // top: 0,
-      //justifyContent: 'flex-start',
-      //alignItems: 'center', 여백 문제
     },
     tabBar: {
-      //position: 'absolute',
-      //bottom: 0,
-      //left: 0,
-      //right: 0,
       flexDirection: 'row',
       height: 60,
       backgroundColor: '#f4eeff',

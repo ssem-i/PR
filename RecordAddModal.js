@@ -3,21 +3,22 @@ import { View, Text, TextInput, Modal, StyleSheet, TouchableOpacity, FlatList, P
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { db } from './firebase'; 
 import { doc, collection, addDoc, Timestamp } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth'; // Firebase Authentication 가져오기
+import { getAuth } from 'firebase/auth'; 
 
 const ModalComponent = ({ visible, onClose }) => {
-  const [amount, setAmount] = useState('');
-  const [memo, setMemo] = useState('');
-  const [category, setCategory] = useState('');
+  const [amount, setAmount] = useState(''); 
+  const [memo, setMemo] = useState(''); 
+  const [category, setCategory] = useState(''); 
   const [selectedIE, setSelectedIE] = useState(null); 
-  const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [date, setDate] = useState(new Date()); 
+  const [showDatePicker, setShowDatePicker] = useState(false); 
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false); 
   const [userEmail, setUserEmail] = useState(null);
 
+  
   useEffect(() => {
     const auth = getAuth();
-    const currentUser = auth.currentUser; // 현재 로그인된 사용자 가져오기
+    const currentUser = auth.currentUser;
     if (currentUser) {
       setUserEmail(currentUser.email); // 이메일 설정
     } else {
@@ -25,22 +26,25 @@ const ModalComponent = ({ visible, onClose }) => {
     }
   }, []);
 
+ 
   const handleAddRecord = async () => {
     try {
+      // 모든 필드가 입력되었는지 확인
       if (!amount || !category || !memo || !selectedIE) {
         alert('모든 칸을 입력해주세요.');
         return;
       }
 
+      //데이터 구성
       const data = {
-        amount: parseFloat(amount),
-        date: Timestamp.fromDate(date),
-        category,
-        memo,
+        amount: parseFloat(amount), // 금액
+        date: Timestamp.fromDate(date), // 선택된 날짜를 Firestore Timestamp로 변환
+        category, // 카테고리
+        memo, // 메모
         type: selectedIE, // 'income' 또는 'expense'
       };
 
-      // Firestore 경로: userEmail -> receipt -> incomes or expenses -> 자동ID문서
+      // 경로 설정: userEmail -> receipt -> incomes 또는 expenses -> 자동 ID 문서
       const userCollectionRef = doc(db, userEmail, 'receipt');
       const subCollectionRef = collection(userCollectionRef, selectedIE === 'income' ? 'incomes' : 'expenses');
 
@@ -48,13 +52,14 @@ const ModalComponent = ({ visible, onClose }) => {
       await addDoc(subCollectionRef, data);
 
       alert('내역이 저장되었습니다!');
-      resetForm();
-      onClose();
+      resetForm(); 
+      onClose(); 
     } catch (error) {
       console.error('오류 발생:', error);
     }
   };
 
+  // 입력 필드 초기화
   const resetForm = () => {
     setAmount('');
     setMemo('');
@@ -63,23 +68,28 @@ const ModalComponent = ({ visible, onClose }) => {
     setDate(new Date());
   };
 
+  // '수입' 버튼 클릭 처리
   const handleIncomePress = () => setSelectedIE('income');
+
+  // '지출' 버튼 클릭 처리
   const handleExpensePress = () => setSelectedIE('expense');
 
+  // 날짜 선택기에서 날짜 변경 시 호출
   const onChangeDate = (event, selectedDate) => {
-    setShowDatePicker(false);
+    setShowDatePicker(false); 
     if (selectedDate) {
-      setDate(selectedDate);
+      setDate(selectedDate); 
     }
   };
 
-  const categories = ['음식', '교통', '여가'];
+  const categories = ['음식', '교통', '여가','쇼핑','교육','주거','건강','경조사','보험','기타']; // 선택 가능한 카테고리 목록
 
+  // 카테고리 항목 렌더링
   const renderCategoryItem = ({ item }) => (
     <TouchableOpacity
       style={styles.categoryItem}
       onPress={() => {
-        setCategory(item);
+        setCategory(item); 
         setCategoryModalVisible(false);
       }}
     >
@@ -91,6 +101,7 @@ const ModalComponent = ({ visible, onClose }) => {
     <Modal visible={visible} animationType="slide" transparent={true}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
+          {/* 날짜 선택 */}
           <Text style={styles.text}>날짜</Text>
           <TouchableOpacity
             style={styles.datePickerButton}
@@ -108,6 +119,7 @@ const ModalComponent = ({ visible, onClose }) => {
             />
           )}
 
+          {/* 수입 또는 지출 선택 */}
           <Text style={styles.text}>수입 또는 지출 선택</Text>
           <View style={styles.IEbuttonContainer}>
             <TouchableOpacity
@@ -124,6 +136,7 @@ const ModalComponent = ({ visible, onClose }) => {
             </TouchableOpacity>
           </View>
 
+          {/* 금액 입력 */}
           <Text style={styles.text}>금액</Text>
           <TextInput
             style={styles.input}
@@ -134,6 +147,7 @@ const ModalComponent = ({ visible, onClose }) => {
             keyboardType="numeric"
           />
 
+          {/* 메모 입력 */}
           <Text style={styles.text}>메모</Text>
           <TextInput
             style={styles.input}
@@ -143,6 +157,7 @@ const ModalComponent = ({ visible, onClose }) => {
             onChangeText={setMemo}
           />
 
+          {/* 카테고리선택*/}
           <Text style={styles.text}>카테고리</Text>
           <TouchableOpacity
             style={styles.categoryButton}
@@ -153,6 +168,7 @@ const ModalComponent = ({ visible, onClose }) => {
             </Text>
           </TouchableOpacity>
 
+          {/* 추가및취소 */}
           <View style={styles.viewButton}>
             <TouchableOpacity style={styles.customButton} onPress={onClose}>
               <Text style={styles.buttonText}>취소</Text>
@@ -164,7 +180,7 @@ const ModalComponent = ({ visible, onClose }) => {
         </View>
       </View>
 
-      {/* 카테고리 선택 모달 */}
+      {/*카테고리선택 모달 */} 
       <Modal
         visible={categoryModalVisible}
         transparent={true}
