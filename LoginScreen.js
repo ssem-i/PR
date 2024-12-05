@@ -1,18 +1,26 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-
+import { auth } from './firebase'; // firebase.js 파일 경로에 맞게 수정
+import { signInWithEmailAndPassword } from 'firebase/auth';
 const LoginScreen = ({ users, setActiveScreen }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const handleLogin = () => {
-    const user = users.find((user) => user.email === email && user.password === password);
-    if (!user) {
-      setLoginError('이메일과 비밀번호가 일치하지 않습니다.');
-    } else {
+  const handleLogin = async () => {
+    try {
+      // Firebase 로그인 처리
+      await signInWithEmailAndPassword(auth, email, password);
       setLoginError('');
-      setActiveScreen('TabBar');
+      setActiveScreen('TabBar'); // 로그인 성공 시 다음 화면으로 이동
+    } catch (error) {
+      // 에러 처리
+      const errorMessage = error.message.includes('auth/user-not-found')
+        ? '사용자가 존재하지 않습니다.'
+        : error.message.includes('auth/wrong-password')
+        ? '비밀번호가 올바르지 않습니다.'
+        : '로그인에 실패했습니다. 다시 시도해주세요.';
+      setLoginError(errorMessage);
     }
   };
 

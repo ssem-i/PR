@@ -1,17 +1,13 @@
-/**
- * Metro configuration for React Native
- * https://github.com/facebook/react-native
- *
- * @format
- */
+const { getDefaultConfig } = require('@react-native/metro-config');
 
-module.exports = {
-  transformer: {
-    getTransformOptions: async () => ({
-      transform: {
-        experimentalImportSupport: false,
-        inlineRequires: true,
-      },
-    }),
-  },
-};
+module.exports = (() => {
+  const config = getDefaultConfig(__dirname);
+
+  config.resolver = {
+    ...config.resolver,
+    assetExts: config.resolver.assetExts.filter((ext) => ext !== 'svg'),
+    sourceExts: [...config.resolver.sourceExts, 'svg'],
+  };
+
+  return config;
+})();
