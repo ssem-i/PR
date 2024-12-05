@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { format, startOfWeek, addDays } from 'date-fns';
-import { Calendar } from 'react-native-calendars';
+import React from 'react';
+import {  Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 
 export default function({ addPress }) {

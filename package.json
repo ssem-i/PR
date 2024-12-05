@@ -10,16 +10,18 @@
     "test": "jest"
   },
   "dependencies": {
-    "@react-native-picker/picker": "^2.9.0",
+    "@react-native-community/datetimepicker": "^7.6.1",
+    "@react-native-picker/picker": "^2.10.2",
     "date-fns": "^4.1.0",
     "firebase": "^11.0.2",
     "react": "18.2.0",
     "react-native": "0.72.3",
     "react-native-calendars": "^1.1307.0",
     "react-native-chart-kit": "^6.12.0",
-    "react-native-date-picker": "^5.0.7",
+    "react-native-date-picker": "^4.4.2",
     "react-native-gifted-charts": "^1.4.47",
     "react-native-linear-gradient": "^2.8.3",
+    "react-native-modal-dropdown": "^1.0.2",
     "react-native-progress": "^5.0.1",
     "react-native-svg": "^13.4.0"
   },

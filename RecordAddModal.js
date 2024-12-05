@@ -1,97 +1,189 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Modal, StyleSheet, TouchableOpacity, FlatList, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { db } from './firebase'; 
+import { doc, collection, addDoc, Timestamp } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth'; // Firebase Authentication 가져오기
 
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import DatePicker from 'react-native-date-picker';
-
-const ModalComponent = ({ visible, onClose, onAddRecord }) => {
-  const [income, setIncome] = useState('');
-  const [expense, setExpense] = useState('');
+const ModalComponent = ({ visible, onClose }) => {
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
   const [category, setCategory] = useState('');
-  const [selectedIE, setSelectedIE] = useState(null);
-  const [ date, setDate]=useState(new Date());
-  const handleAddRecord = () => {
-    if (income || expense) {
-      onAddRecord(income, expense, memo, category);
-      setIncome('');
-      setExpense('');
-      onClose();
+  const [selectedIE, setSelectedIE] = useState(null); 
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [userEmail, setUserEmail] = useState(null);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser; // 현재 로그인된 사용자 가져오기
+    if (currentUser) {
+      setUserEmail(currentUser.email); // 이메일 설정
     } else {
+      console.error('로그인된 사용자가 없습니다.');
+    }
+  }, []);
+
+  const handleAddRecord = async () => {
+    try {
+      if (!amount || !category || !memo || !selectedIE) {
+        alert('모든 칸을 입력해주세요.');
+        return;
+      }
+
+      const data = {
+        amount: parseFloat(amount),
+        date: Timestamp.fromDate(date),
+        category,
+        memo,
+        type: selectedIE, // 'income' 또는 'expense'
+      };
+
+      // Firestore 경로: userEmail -> receipt -> incomes or expenses -> 자동ID문서
+      const userCollectionRef = doc(db, userEmail, 'receipt');
+      const subCollectionRef = collection(userCollectionRef, selectedIE === 'income' ? 'incomes' : 'expenses');
+
+      // 데이터 추가
+      await addDoc(subCollectionRef, data);
+
+      alert('내역이 저장되었습니다!');
+      resetForm();
+      onClose();
+    } catch (error) {
+      console.error('오류 발생:', error);
     }
   };
-   const handleIncomePress = () => {
-      console.log('수입선택');
-      setSelectedIE('income');
-    };
 
-   const handleExpensePress = () => {
-     console.log('지출선택');
-     setSelectedIE('expense');
-   };
+  const resetForm = () => {
+    setAmount('');
+    setMemo('');
+    setCategory('');
+    setSelectedIE(null);
+    setDate(new Date());
+  };
+
+  const handleIncomePress = () => setSelectedIE('income');
+  const handleExpensePress = () => setSelectedIE('expense');
+
+  const onChangeDate = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
+
+  const categories = ['음식', '교통', '여가'];
+
+  const renderCategoryItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.categoryItem}
+      onPress={() => {
+        setCategory(item);
+        setCategoryModalVisible(false);
+      }}
+    >
+      <Text style={styles.categoryText}>{item}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.Text2}>날짜</Text>
-          <View style={styles.dateContainer}>
-              <DatePicker
-                date={date}
-                onDateChange={setDate}
-                mode="date"
-                locale="ko"
-                theme="light"
-                style={{ transform: [{ scale: 0.9 }], width: 151} }
-                />
-          </View>
-          <Text style={styles.Text}>수입 또는 지출 선택</Text>
-          <View style={styles.IEbuttonContainer}>
-          <TouchableOpacity style={[styles.IEbutton, selectedIE==='income' && styles.selectedIE
-          ]}
-          onPress={handleIncomePress}
+          <Text style={styles.text}>날짜</Text>
+          <TouchableOpacity
+            style={styles.datePickerButton}
+            onPress={() => setShowDatePicker(true)}
           >
-            <Text style={styles.IEtext}>수입</Text>
+            <Text style={styles.datePickerText}>{date.toLocaleDateString()}</Text>
           </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onChangeDate}
+              locale="ko-KR"
+            />
+          )}
 
-          <TouchableOpacity style={[styles.IEbutton, selectedIE==='expense' && styles.selectedIE
-          ]} onPress={handleExpensePress} >
-            <Text style={styles.IEtext}>지출</Text>
-          </TouchableOpacity>
-          </View>
-
-          <Text style={styles.Text}>금액</Text>
-          <TextInput style={styles.input} placeholder="금액을 입력하세요." placeholderTextColor="gray"
-          value={amount} onChangeText={setAmount} keyboardType="numeric"/>
-
-          <Text style={styles.Text}>메모</Text>
-          <TextInput style={styles.input} placeholder="메모를 입력하세요." placeholderTextColor="gray"
-          value={memo} onChangeText={setMemo}/>
-
-          <Text style={styles.Text}>카테고리</Text>
-          <View style={styles.viewPicker}>
-            <Picker
-            selectedValue={category}
-            onValueChange={(value) => setCategory(value)}
-            style={styles.picker}
+          <Text style={styles.text}>수입 또는 지출 선택</Text>
+          <View style={styles.IEbuttonContainer}>
+            <TouchableOpacity
+              style={[styles.IEbutton, selectedIE === 'income' && styles.selectedIE]}
+              onPress={handleIncomePress}
             >
-            <Picker.Item label='음식' value="f" style={styles.pickerItem}/>
-            <Picker.Item label='교통' value="t" style={styles.pickerItem}/>
-            <Picker.Item label='여가' value="p" style={styles.pickerItem}/>
-            </Picker>
+              <Text style={styles.IEtext}>수입</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.IEbutton, selectedIE === 'expense' && styles.selectedIE]}
+              onPress={handleExpensePress}
+            >
+              <Text style={styles.IEtext}>지출</Text>
+            </TouchableOpacity>
           </View>
+
+          <Text style={styles.text}>금액</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="금액을 입력하세요."
+            placeholderTextColor="gray"
+            value={amount}
+            onChangeText={setAmount}
+            keyboardType="numeric"
+          />
+
+          <Text style={styles.text}>메모</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="메모를 입력하세요."
+            placeholderTextColor="gray"
+            value={memo}
+            onChangeText={setMemo}
+          />
+
+          <Text style={styles.text}>카테고리</Text>
+          <TouchableOpacity
+            style={styles.categoryButton}
+            onPress={() => setCategoryModalVisible(true)}
+          >
+            <Text style={styles.categoryButtonText}>
+              {category || '카테고리를 선택하세요'}
+            </Text>
+          </TouchableOpacity>
 
           <View style={styles.viewButton}>
             <TouchableOpacity style={styles.customButton} onPress={onClose}>
-              <Text style={styles.IEtext}>취소</Text>
+              <Text style={styles.buttonText}>취소</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.customButton} onPress={handleAddRecord}>
-              <Text style={styles.IEtext}>추가</Text>
+              <Text style={styles.buttonText}>추가</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
+
+      {/* 카테고리 선택 모달 */}
+      <Modal
+        visible={categoryModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setCategoryModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          onPress={() => setCategoryModalVisible(false)}
+        >
+          <View style={styles.categoryModal}>
+            <FlatList
+              data={categories}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={renderCategoryItem}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </Modal>
   );
 };
@@ -104,39 +196,35 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: 300,
+    width: 320,
     padding: 20,
     backgroundColor: 'white',
     borderRadius: 10,
   },
-  Text: {
+  text: {
+    fontSize: 16,
     color: '#000',
-    marginTop: 30,
     marginBottom: 10,
   },
-  Text2: {
-      color: '#000',
-      marginTop: 30,
-    },
-  IEtext: {
-    color: '#000',
-  },
-  input: {
-    height: 40,
+  datePickerButton: {
+    borderBottomWidth: 1,
     borderColor: '#ccc',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 8,
-    borderRadius: 5,
-    color: '#000',
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginBottom: 15,
   },
-  viewButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  datePickerText: {
+    fontSize: 16,
+    color: '#000',
   },
   IEbuttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  IEtext: {
+    color: '#000',
+    fontSize: 16,
   },
   IEbutton: {
     backgroundColor: 'lightgrey',
@@ -144,23 +232,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     borderRadius: 5,
   },
-  picker: {
-    flex: 1,
-    color: '#000',
-    backgroundColor: 'lightgrey',
-    marginBottom: 70,
+  selectedIE: {
+    backgroundColor: 'grey',
   },
-  viewPicker: {
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 15,
+    fontSize: 16,
+    color: '#000',
+  },
+  categoryButton: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
     marginBottom: 20,
   },
-  pickerItem: {
-    fontSize: 14,
-    backgroundColor: 'lightgrey',
-    color: "#000",
+  categoryButtonText: {
+    fontSize: 16,
+    color: '#000',
   },
-  button: {
-    backgroundColor: 'lightgrey',
-    color: "#000",
+  viewButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
   },
   customButton: {
     paddingVertical: 10,
@@ -168,15 +267,30 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
+    flex: 1,
     marginHorizontal: 5,
-    backgroundColor: '#E6E6FA',
+    backgroundColor: '#D3D3D3',
   },
-  selectedIE: {
-      backgroundColor: 'grey',
+  buttonText: {
+    color: '#000',
+    fontSize: 16,
   },
-  dateContainer: {
-      alignItems: 'center',
-    },
+  categoryModal: {
+    width: 250,
+    padding: 15,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    elevation: 4,
+  },
+  categoryItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  categoryText: {
+    fontSize: 16,
+    color: '#000',
+  },
 });
 
 export default ModalComponent;

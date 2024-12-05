@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import { Calendar } from "react-native-calendars";
-import CalendarView from './CalendarView';
 import Goal from './Goal';
-import IEList from './IEList';
 import MainScreen from './MainScreen';
 import Stat from './StatScreen';
 
