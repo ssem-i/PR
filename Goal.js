@@ -5,6 +5,7 @@ import GoalDelModal from './GoalDelModal.js';
 import BudgetBar from './BudgetBar.js';
 import BudgetModal from './BudgetModal.js';
 import * as Progress from 'react-native-progress';
+import GoalAmountModal2 from './GoalAmountModal2';
 
 const PlustButton = ({ onAddPress }) => {
   return(
@@ -14,6 +15,16 @@ const PlustButton = ({ onAddPress }) => {
       >
       <Text style={styles.text}>+</Text>
     </TouchableOpacity>
+  );
+}
+const AmountButton = ({onAmountPress})=>{
+  return(
+  <TouchableOpacity
+    style={styles.amtBtn}
+    onPress={onAmountPress}
+  >
+    <Text style={styles.text}>+ $</Text>
+  </TouchableOpacity>
   );
 }
 const DelButton = ({ onDelPress }) => {
@@ -36,13 +47,14 @@ function GoalHeader({onAddPress}) {
     </View>
   );
 }
-function GoalItem({ index, goal, dayLeft, insufAmount, onDelPress }) {
+function GoalItem({ index, goal, dayLeft, insufAmount, onAmountPress, onDelPress }) {
      return (
          <View style={styles.goalItem} >
            <Text style={styles.text} > {index} </Text>
            <Text style={styles.text} > {goal} </Text>
            <Text style={styles.text} > {dayLeft} 일</Text>
            <Text style={styles.text} > {insufAmount} 원</Text>
+           <AmountButton onAmountPress={() => onAmountPress(index)} />
            <DelButton onDelPress={() => onDelPress(index)} />
          </View>
      );
@@ -96,6 +108,7 @@ function GoalView() {
                   goal={item.goal}
                   dayLeft={item.dayLeft}
                   insufAmount={item.insufAmount}
+                  onAmountPress={handleAmountPress}
                   onDelPress={handleDelBtnPress}
                 />
       )}
