@@ -3,8 +3,13 @@ import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity } fr
 import { Picker } from '@react-native-picker/picker';
 
 
-export default function GaolAmountModal2({ visible, onClose }) {
-
+export default function GaolAmountModal2({ visible, onClose, onConfirmAmount, selectedGoalIndex  }) {
+  const [ incAmount, setIncAmount ] = useState('');
+  const handleConfirm = () => {
+      const amount = parseInt(incAmount, 10) || 0;
+      onConfirmAmount(selectedGoalIndex, amount);
+      onClose();
+  };
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
       <View style={styles.modalOverlay}>
@@ -13,14 +18,14 @@ export default function GaolAmountModal2({ visible, onClose }) {
           <View style={styles.container}>
           <Text style={styles.containerText}>금액</Text>
           <TextInput style={styles.input} placeholder="금액(원)" placeholderTextColor="gray" keyboardType="numeric"
-          //value={} onChangeText={}
+          value={incAmount} onChangeText={setIncAmount}
           />
           </View>
           <View style={styles.viewButton}>
             <TouchableOpacity style={styles.btn} onPress={onClose}>
             <Text style={styles.text}>취소</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.btn} >
+            <TouchableOpacity style={styles.btn} onPress={handleConfirm}>
             <Text style={styles.text}>적용</Text>
             </TouchableOpacity>
           </View>

@@ -47,8 +47,8 @@ function WeekCalendar() {
   return (
     <View style={styles.container}>
       <View style={{alignItems: 'center'}}>
-                  <Text style={ {color:'black', padding : 20}} >△</Text>
-                  </View>
+        <Text style={ {color:'black', padding : 20}} >△</Text>
+      </View>
       <Text style={styles.title}>이번주 캘린더</Text>
       <View style={styles.weekContainer}>
         {thisWeekDates.map((date) => {
@@ -64,6 +64,7 @@ function WeekCalendar() {
           );
         })}
       </View>
+      <Text style={ {color:'black', paddingTop:170, paddingLeft:200,}} >▽</Text>
       <AddBtn addPress={handleAddPress}/>
       {modalVisible && ( // 조건부 렌더링
         <RecordAddModal visible={modalVisible} onClose={handleCloseModal} />

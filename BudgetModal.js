@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
-
+// onApplyBuget
 export default function BudgetModal({ visible, onClose}) {
   const [monthlyBudget, setMonthlyBudget]=useState('');
   const [dailyBudget, setDailyBudget]=useState('');
@@ -15,6 +15,12 @@ export default function BudgetModal({ visible, onClose}) {
       setMonthlyBudget('');
       setDailyBudget('');
   };
+  /*
+  const handleApply= () => {
+    onApplyBudget({monthlyBudget, dailyBudget});
+    setMonthlyBudget('');
+    setDailyBudget('');
+  }*/
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
       <View style={styles.modalOverlay}>
@@ -41,7 +47,7 @@ export default function BudgetModal({ visible, onClose}) {
             <Text style={styles.text}>취소</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.btn}
-             // onPress={applyPress}
+             // onPress={handleApply}
             >
             <Text style={styles.text}>적용</Text>
             </TouchableOpacity>

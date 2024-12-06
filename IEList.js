@@ -68,7 +68,9 @@ export default function IEList() {
 
   return (
     <View style={styles.flatListView}>
+
     <Text style={styles.textTitle}>수입 지출 내역</Text>
+
 
     <FlatList
       style={styles.flatList}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import { Calendar } from "react-native-calendars";
 import CalendarView from './CalendarView';
 import Goal from './Goal';
@@ -50,20 +50,29 @@ export default function TabBar() {
           style={styles.tabButton}
           onPress={handleTabCal}
         >
-        <Text style={styles.tabText}>Calendar</Text>
+          <Image style={{ width: 35, height: 35,}}
+            source={require('./images/cal.png')}
+          />
+          <Text style={{color:'black'}}>cal</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
           style={styles.tabButton}
           onPress={handleTabStat} >
-        <Text style={styles.tabText}>statistics</Text>
+          <Image style={{ width: 35, height: 35,}}
+            source={require('./images/stats.png')}
+          />
+          <Text style={{color:'black'}}>stat</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.tabButton}
           onPress={handleTabGoal}
         >
-        <Text style={styles.tabText}>Goal</Text>
+          <Image style={{ width: 35, height: 35,}}
+            source={require('./images/goal.png')}
+          />
+          <Text style={{color:'black'}}>goal</Text>
         </TouchableOpacity>
       </View>
     </View>

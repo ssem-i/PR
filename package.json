@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@react-native-picker/picker": "^2.9.0",
+    "@react-native-vector-icons/common": "^11.0.0",
+    "@react-native-vector-icons/evil-icons": "^1.10.1",
+    "@react-native-vector-icons/fontawesome6": "^6.7.1",
     "date-fns": "^4.1.0",
     "react": "17.0.2",
     "react-native": "0.68.2",
@@ -20,7 +23,8 @@
     "react-native-gifted-charts": "^1.4.47",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-progress": "^5.0.1",
-    "react-native-svg": "^12.1.1"
+    "react-native-svg": "^12.1.1",
+    "react-native-vector-icons": "^10.2.0"
   },
   "devDependencies": {
     "@babel/core": "7.26.0",

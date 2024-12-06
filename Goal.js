@@ -5,7 +5,7 @@ import GoalDelModal from './GoalDelModal.js';
 import BudgetBar from './BudgetBar.js';
 import BudgetModal from './BudgetModal.js';
 import * as Progress from 'react-native-progress';
-
+import GoalAmountModal2 from './GoalAmountModal2';
 const PlustButton = ({ onAddPress }) => {
   return(
     <TouchableOpacity
@@ -26,6 +26,16 @@ const DelButton = ({ onDelPress }) => {
     </TouchableOpacity>
   );
 }
+const AmountButton = ({onAmountPress})=>{
+  return(
+  <TouchableOpacity
+    style={styles.amtBtn}
+    onPress={onAmountPress}
+  >
+    <Text style={styles.text}>+ $</Text>
+  </TouchableOpacity>
+  );
+}
 function GoalHeader({onAddPress}) {
   return (
     <View style={styles.headerContainer}>
@@ -36,13 +46,14 @@ function GoalHeader({onAddPress}) {
     </View>
   );
 }
-function GoalItem({ index, goal, dayLeft, insufAmount, onDelPress }) {
+function GoalItem({ index, goal, dayLeft, insufAmount, onAmountPress, onDelPress }) {
      return (
          <View style={styles.goalItem} >
            <Text style={styles.text} > {index} </Text>
            <Text style={styles.text} > {goal} </Text>
            <Text style={styles.text} > {dayLeft} 일</Text>
            <Text style={styles.text} > {insufAmount} 원</Text>
+           <AmountButton onAmountPress={() => onAmountPress(index)} />
            <DelButton onDelPress={() => onDelPress(index)} />
          </View>
      );
@@ -51,6 +62,8 @@ function GoalView() {
   const [goalModalVisible, setGoalModalVisible] = useState(false); // 상태 관리
   const [delModalVisible, setDelModalVisible] = useState(false);
   const [selectedGoalIndex, setSelectedGoalIndex] = useState(null); // 선택된 목표 인덱스
+  const [amountModalVisible, setAmountModalVisible] = useState(false);
+
   const [goalData, setGoalData] = useState([
       { index: 1, goal: '내용', dayLeft: 10, insufAmount: '5000' },
       { index: 2, goal: "내용2", dayLeft: 5, insufAmount: '2000' },
@@ -58,6 +71,11 @@ function GoalView() {
     ]);
   const handlePlustBtnPress = () => {
     setGoalModalVisible(true);
+  }
+  const handleAmountPress=(index) =>{
+    console.log(`금액추가: ${index}`);
+    setSelectedGoalIndex(index);
+    setAmountModalVisible(true);
   }
   const handleDelBtnPress = (index) => {
     console.log(`삭제선택: ${index}`);
@@ -84,6 +102,15 @@ function GoalView() {
       ]);
       setGoalModalVisible(false); // 모달 닫기
   };
+  const handleAmountUpdate = (index, amount) => {
+      setGoalData((prevGoals) =>
+        prevGoals.map((goal) =>
+          goal.index === index
+            ? { ...goal, insufAmount: (parseInt(goal.insufAmount, 10) - amount).toString() }
+            : goal
+        )
+      );
+    };
   return(
   <View>
     <GoalHeader onAddPress={handlePlustBtnPress}/>
@@ -96,6 +123,7 @@ function GoalView() {
                   goal={item.goal}
                   dayLeft={item.dayLeft}
                   insufAmount={item.insufAmount}
+                  onAmountPress={handleAmountPress}
                   onDelPress={handleDelBtnPress}
                 />
       )}
@@ -113,6 +141,14 @@ function GoalView() {
           visible={delModalVisible}
           onClose={() => setDelModalVisible(false)}
           onConfirmDel={handleDeleteGoal}
+        />
+      )}
+      {amountModalVisible && (
+        <GoalAmountModal2
+          visible={amountModalVisible}
+          onClose={() => setAmountModalVisible(false)}
+          selectedGoalIndex={selectedGoalIndex}
+          onConfirmAmount={handleAmountUpdate}
         />
       )}
     </View>
@@ -154,6 +190,11 @@ const styles = StyleSheet.create({
       backgroundColor: '#dcc9ff',
       padding: 10,
       borderRadius: 30,
+  },
+  amtBtn:{
+    backgroundColor: '#dcc9ff',
+    padding: 10,
+    borderRadius: 30,
   },
   flatList: {
     margin: 20,
