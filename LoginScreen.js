@@ -92,6 +92,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   input: {
+    color: 'black',
     width: '100%',
     padding: 15,
     borderWidth: 1,

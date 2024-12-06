@@ -30,7 +30,7 @@ const AmountButton = ({onAmountPress})=>{
 const DelButton = ({ onDelPress }) => {
   return(
     <TouchableOpacity
-      style={styles.delBtn}
+      style={styles.amtBtn}
       onPress={onDelPress}
       >
       <Text style={styles.text}>삭제</Text>
@@ -63,6 +63,7 @@ function GoalView() {
   const [goalModalVisible, setGoalModalVisible] = useState(false); // 상태 관리
   const [delModalVisible, setDelModalVisible] = useState(false);
   const [selectedGoalIndex, setSelectedGoalIndex] = useState(null); // 선택된 목표 인덱스
+  const [amountModalVisible, setAmountModalVisible] = useState(false);
   const [goalData, setGoalData] = useState([
       { index: 1, goal: '내용', dayLeft: 10, insufAmount: '5000' },
       { index: 2, goal: "내용2", dayLeft: 5, insufAmount: '2000' },
@@ -75,6 +76,11 @@ function GoalView() {
     console.log(`삭제선택: ${index}`);
     setSelectedGoalIndex(index); // 목표 인덱스를 설정
     setDelModalVisible(true);
+  }
+  const handleAmountPress=(index) =>{
+      console.log(`금액추가: ${index}`);
+      setSelectedGoalIndex(index);
+      setAmountModalVisible(true);
   }
  const handleDeleteGoal = () => {
    console.log('삭제 버튼 클릭됨:', selectedGoalIndex);  // 삭제될 목표 인덱스 출력
@@ -96,6 +102,15 @@ function GoalView() {
       ]);
       setGoalModalVisible(false); // 모달 닫기
   };
+  const handleAmountUpdate = (index, amount) => {
+        setGoalData((prevGoals) =>
+          prevGoals.map((goal) =>
+            goal.index === index
+              ? { ...goal, insufAmount: (parseInt(goal.insufAmount, 10) - amount).toString() }
+              : goal
+          )
+        );
+      };
   return(
   <View>
     <GoalHeader onAddPress={handlePlustBtnPress}/>
@@ -128,6 +143,15 @@ function GoalView() {
           onConfirmDel={handleDeleteGoal}
         />
       )}
+      {amountModalVisible && (
+              <GoalAmountModal2
+                visible={amountModalVisible}
+                onClose={() => setAmountModalVisible(false)}
+                selectedGoalIndex={selectedGoalIndex}
+                onConfirmAmount={handleAmountUpdate}
+              />
+            )}
+
     </View>
   );
 }
@@ -168,6 +192,11 @@ const styles = StyleSheet.create({
       padding: 10,
       borderRadius: 30,
   },
+  amtBtn:{
+      backgroundColor: '#dcc9ff',
+      padding: 10,
+      borderRadius: 30,
+    },
   flatList: {
     margin: 20,
   },

@@ -66,7 +66,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginRight: 15,
   },
+
   input: {
+      color: 'black',
       width: 150,
       height: 40,
       borderColor: '#ccc',
