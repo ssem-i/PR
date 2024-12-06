@@ -2,59 +2,58 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from './firebase'; 
-import { getAuth } from 'firebase/auth'; 
-import DatePickerModal from './DatePickerModal'; 
+import { db } from './firebase';
+import { getAuth } from 'firebase/auth';
+import DatePickerModal from './DatePickerModal';
 
 const PieChartComponent = () => {
   const [isModalVisible, setIsModalVisible] = useState(false); // 모달 표시 여부
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); // 선택된 연도
-  const [selectedHalf, setSelectedHalf] = useState('상반기'); // 선택된 상하반기 
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // 선택된 월
   const [categoriesData, setCategoriesData] = useState({}); // 카테고리별 지출 데이터
   const [pieData, setPieData] = useState([]); // 파이 차트 데이터
 
-  
   useEffect(() => {
     fetchCategoryData();
-  }, [selectedYear, selectedHalf]);
+  }, [selectedYear, selectedMonth]);
 
-  //  카테고리별 지출 데이터를 가져오는 함수
+  // 카테고리별 지출 데이터를 가져오는 함수
   const fetchCategoryData = async () => {
     try {
       const auth = getAuth();
-      const currentUser = auth.currentUser; 
+      const currentUser = auth.currentUser;
 
       if (!currentUser) {
-        console.error('사용자없음');
+        console.error('사용자 없음');
         return;
       }
 
       const userEmail = currentUser.email; // 사용자 이메일
-      const months = selectedHalf === '상반기' ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12]; // 상반기 또는 하반기의 월 범위 설정
+      const startDate = new Date(`${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`);
+      const endDate = new Date(startDate);
+      endDate.setMonth(startDate.getMonth() + 1); // 다음 달의 시작일로 설정
+      endDate.setDate(0); // 해당 월의 마지막 날로 설정
 
-      //  지출 데이터 가져오기 
+      // 지출 데이터 가져오기
       const expensesQuery = query(
         collection(db, userEmail, 'receipt', 'expenses'),
-        where('date', '>=', new Date(`${selectedYear}-01-01`)),
-        where('date', '<=', new Date(`${selectedYear}-12-31`))
+        where('date', '>=', startDate),
+        where('date', '<=', endDate)
       );
 
       const expenseSnapshot = await getDocs(expensesQuery);
 
       const categories = expenseSnapshot.docs.reduce((acc, doc) => {
-        const { amount, category, date } = doc.data();
-        const month = new Date(date.toDate()).getMonth() + 1; // 데이터의 월 추출
-        if (months.includes(month)) {
-          acc[category] = (acc[category] || 0) + amount; // 카테고리별로 합산
-        }
+        const { amount, category } = doc.data();
+        acc[category] = (acc[category] || 0) + amount; // 카테고리별로 합산
         return acc;
       }, {});
 
-      setCategoriesData(categories); 
+      setCategoriesData(categories);
 
       const totalExpenses = Object.values(categories).reduce((sum, expense) => sum + expense, 0); // 총 지출 계산
 
-   
+      // 파이 차트 데이터 변환
       const pieChartData = Object.keys(categories).map((category) => ({
         name: category,
         population: (categories[category] / totalExpenses) * 100, // 전체 대비 퍼센트 계산
@@ -75,14 +74,12 @@ const PieChartComponent = () => {
             ? '#00ff00'
             : category === '보험'
             ? '#00ffff'
-            : category === '기타'
-            ? '#ffff00'
-            : '#e4b7ff', // 카테고리별 색상 지정
+            : '#e4b7ff', // 기본 색상
         legendFontColor: '#7F7F7F',
         legendFontSize: 15,
       }));
 
-      setPieData(pieChartData); // 상태에 파이 차트 데이터 저장
+      setPieData(pieChartData);
     } catch (error) {
       console.error('오류:', error);
     }
@@ -90,10 +87,10 @@ const PieChartComponent = () => {
 
   const openModal = () => setIsModalVisible(true);
 
-  // 모달에서 선택된 연도와 상하반기 적용
-  const applyPeriod = (year, half) => {
+  // 모달에서 선택된 연도와 월 적용
+  const applyPeriod = (year, month) => {
     setSelectedYear(year);
-    setSelectedHalf(half);
+    setSelectedMonth(month);
     setIsModalVisible(false);
   };
 
@@ -102,10 +99,10 @@ const PieChartComponent = () => {
 
   return (
     <View style={styles.container}>
-      {/* 선택된 연도와 상하반기 표시 */}
+      {/* 선택된 연도와 월 표시 */}
       <View style={styles.header}>
         <Text style={styles.title}>
-          {selectedYear}년 {selectedHalf}
+          {selectedYear}년 {selectedMonth}월
         </Text>
         <TouchableOpacity style={styles.dateButton} onPress={openModal}>
           <Text style={styles.dateButtonText}>기간 설정</Text>
@@ -113,10 +110,10 @@ const PieChartComponent = () => {
         {isModalVisible && (
           <DatePickerModal
             selectedYear={selectedYear}
-            selectedHalf={selectedHalf}
+            selectedMonth={selectedMonth}
             applyPeriod={applyPeriod}
             closeModal={closeModal}
-            isPieChartModal={true}
+            isPieChartModal={true} // PieChart에 맞는 모달
           />
         )}
       </View>
@@ -138,7 +135,6 @@ const PieChartComponent = () => {
             accessor="population"
             backgroundColor="transparent"
             absolute
-            hasLegend={false}
           />
         </View>
 
