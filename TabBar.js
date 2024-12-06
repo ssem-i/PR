@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import Goal from './Goal';
 import MainScreen from './MainScreen';
 import Stat from './StatScreen';
@@ -44,24 +44,33 @@ export default function TabBar() {
 
       <View style={styles.tabBar}>
         <TouchableOpacity
-          style={styles.tabButton}
-          onPress={handleTabCal}
-        >
-        <Text style={styles.tabText}>캘린더</Text>
-        </TouchableOpacity>
+                  style={styles.tabButton}
+                  onPress={handleTabCal}
+                >
+                  <Image style={{ width: 35, height: 35,}}
+                    source={require('./images/cal.png')}
+                  />
+                  <Text style={{color:'black'}}>cal</Text>
+                </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.tabButton}
-          onPress={handleTabStat} >
-        <Text style={styles.tabText}>분석</Text>
-        </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.tabButton}
+                  onPress={handleTabStat} >
+                  <Image style={{ width: 35, height: 35,}}
+                    source={require('./images/stats.png')}
+                  />
+                  <Text style={{color:'black'}}>stat</Text>
+                </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.tabButton}
-          onPress={handleTabGoal}
-        >
-        <Text style={styles.tabText}>목표</Text>
-        </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.tabButton}
+                  onPress={handleTabGoal}
+                >
+                  <Image style={{ width: 35, height: 35,}}
+                    source={require('./images/goal.png')}
+                  />
+                  <Text style={{color:'black'}}>goal</Text>
+                </TouchableOpacity>
       </View>
     </View>
   );

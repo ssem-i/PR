@@ -13,13 +13,11 @@ function MainScreen() {
 
   const panResponderTop = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
-    onPanResponderMove: (e, gestureState) => { // 드래그할 때 호출
-      // 아래로 드래그(g.dy > 0) → CalendarView
+    onPanResponderMove: (e, gestureState) => {
       if (gestureState.dy > 0) translateY.setValue(gestureState.dy);
     },
     onPanResponderRelease: (e, gestureState) => {
       if (gestureState.dy > 150) {
-            // 충분히 아래로 드래그하면 calendar로 전환
             Animated.timing(translateY, {
               toValue: SCREEN_HEIGHT, // CalendarView 전체 화면
               duration: 100,
@@ -39,7 +37,7 @@ function MainScreen() {
     },
     onPanResponderRelease: (e, gestureState) => {
     if (gestureState.dy < -150) {
-      setViewState('split'); // 충분히 위로 드래그하면 split 화면으로 전환
+      setViewState('split'); // 위로 드래그하면 split 화면으로 전환
       Animated.spring(translateY, {
       toValue: 0, useNativeDriver: true,
                // duration: 300,
